@@ -8,10 +8,14 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: env.clientUrl,
+    origin: [
+      "http://localhost:5173",
+      process.env.CLIENT_URL
+    ],
     credentials: true,
   },
 });
+
 
 // Room-based logic
 io.on("connection", (socket) => {

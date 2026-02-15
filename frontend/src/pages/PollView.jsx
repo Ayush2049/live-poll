@@ -13,7 +13,7 @@ const PollView = () => {
   const [voted, setVoted] = useState(false);
 
   useEffect(() => {
-    const socket = io("http://localhost:5000", {
+    const socket = io(import.meta.env.VITE_API_URL.replace("/api", ""), {
       withCredentials: true,
     });
 
