@@ -1,3 +1,6 @@
+import { castVoteService } from "../services/vote.service.js";
+import { io } from "../server.js";
+
 export const castVote = async (req, res, next) => {
   try {
     const { pollId } = req.params;
