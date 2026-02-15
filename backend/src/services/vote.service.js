@@ -4,8 +4,7 @@ import { Vote } from "../models/vote.model.js";
 export const castVoteService = async ({
   pollId,
   optionId,
-  voterToken,
-  voterIP,
+  deviceToken,
 }) => {
   const poll = await Poll.findById(pollId);
 
@@ -23,15 +22,14 @@ export const castVoteService = async ({
     throw new Error("Invalid option selected.");
   }
 
-  // Create vote (unique index will prevent duplicates)
+  // 🔥 Create vote (unique index handles duplicates safely)
   await Vote.create({
     pollId,
     optionId,
-    voterToken,
-    voterIP,
+    deviceToken,
   });
 
-  // Atomic increment using updateOne
+  // Atomic increment
   await Poll.updateOne(
     { _id: pollId, "options._id": optionId },
     {
