@@ -10,7 +10,10 @@ export const createPoll = (data) => API.post("/polls", data);
 
 export const getPoll = (id) => API.get(`/polls/${id}`);
 
-export const castVote = (pollId, optionId) =>
-  API.post(`/votes/${pollId}`, { optionId });
+export const castVote = (pollId, optionId, deviceToken) =>
+  API.post(`/votes/${pollId}`, {
+    optionId,
+    deviceToken,
+  });
 
 export default API;

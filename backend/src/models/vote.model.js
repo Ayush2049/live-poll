@@ -12,24 +12,15 @@ const voteSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
-    voterToken: {
+    deviceToken: {
       type: String,
       required: true,
-      index: true,
-    },
-    voterIP: {
-      type: String,
-      required: true,
-      index: true,
     },
   },
   { timestamps: true }
 );
 
-// Prevent duplicate token vote per poll
-voteSchema.index({ pollId: 1, voterToken: 1 }, { unique: true });
-
-// Prevent duplicate IP vote per poll
-voteSchema.index({ pollId: 1, voterIP: 1 }, { unique: true });
+// 🔥 ONE DEVICE PER POLL
+voteSchema.index({ pollId: 1, deviceToken: 1 }, { unique: true });
 
 export const Vote = mongoose.model("Vote", voteSchema);

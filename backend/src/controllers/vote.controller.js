@@ -1,34 +1,21 @@
-import { castVoteService } from "../services/vote.service.js";
-import { generateVoterToken } from "../utils/generateToken.js";
-import { io } from "../server.js";
-
 export const castVote = async (req, res, next) => {
   try {
     const { pollId } = req.params;
-    const { optionId } = req.body;
+    const { optionId, deviceToken } = req.body;
 
-    if (!optionId) {
-      throw new Error("Option ID is required.");
-    }
-
-    let voterToken = req.cookies?.voterToken;
-
-    if (!voterToken) {
-      voterToken = generateVoterToken();
-      res.cookie("voterToken", voterToken, {
-        httpOnly: true,
-        sameSite: "strict",
+    if (!optionId || !deviceToken) {
+      return res.status(400).json({
+        success: false,
+        message: "Option ID and device token are required.",
       });
     }
 
     const updatedPoll = await castVoteService({
       pollId,
       optionId,
-      voterToken,
-      voterIP: req.ip,
+      deviceToken,
     });
 
-    // 🔥 Broadcast to room - only users in this poll receive update
     io.to(pollId).emit("vote_update", updatedPoll);
 
     res.status(200).json({
@@ -37,6 +24,13 @@ export const castVote = async (req, res, next) => {
       data: updatedPoll,
     });
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(403).json({
+        success: false,
+        message: "You have already voted in this poll.",
+      });
+    }
+
     next(error);
   }
 };

@@ -42,7 +42,15 @@ const PollView = () => {
 
   const handleVote = async (optionId) => {
     try {
-      await castVote(id, optionId);
+      let deviceToken = localStorage.getItem("device_token");
+
+      if (!deviceToken) {
+        deviceToken = crypto.randomUUID();
+        localStorage.setItem("device_token", deviceToken);
+      }
+
+      await castVote(id, optionId, deviceToken);
+
       setVoted(true);
     } catch (error) {
       alert(error.response?.data?.message);
