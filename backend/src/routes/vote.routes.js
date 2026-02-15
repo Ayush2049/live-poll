@@ -2,7 +2,6 @@ import express from "express";
 import mongoose from "mongoose";
 import { castVote } from "../controllers/vote.controller.js";
 import { voteRateLimiter } from "../middlewares/rateLimit.middleware.js";
-import { checkDuplicateVote } from "../middlewares/fairness.middleware.js";
 
 const router = express.Router();
 
@@ -28,14 +27,12 @@ const validatePollId = (req, res, next) => {
  * Middleware Order:
  * 1. Rate limiting
  * 2. Validate pollId
- * 3. Duplicate vote protection
- * 4. Cast vote controller
+ * 3. Cast vote controller
  */
 router.post(
   "/:pollId",
   voteRateLimiter,
   validatePollId,
-  checkDuplicateVote,
   castVote
 );
 
