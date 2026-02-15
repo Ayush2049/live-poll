@@ -1,0 +1,99 @@
+/* ===========================
+   PAGE CONTAINER
+=========================== */
+
+.page-container {
+  width: 100%;
+  min-height: 100vh;
+  padding: 60px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* ===========================
+   CARD
+=========================== */
+
+.card {
+  width: 100%;
+  max-width: 1200px;
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-2xl);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+/* ===========================
+   TITLES
+=========================== */
+
+.poll-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #ef4444;
+  margin-bottom: var(--spacing-xl);
+  text-align: center;
+}
+
+/* ===========================
+   DIVIDER
+=========================== */
+
+.divider,
+hr {
+  border: none;
+  height: 1px;
+  background: var(--border);
+  margin: var(--spacing-xl) 0;
+}
+
+/* ===========================
+   SECTION HEADER
+=========================== */
+
+.section-header {
+  margin-bottom: var(--spacing-lg);
+}
+
+.section-header h3 {
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  margin-bottom: var(--spacing-xs);
+}
+
+.section-header p {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+/* ===========================
+   CONTENT SECTION
+=========================== */
+
+.content-section {
+  margin-top: var(--spacing-lg);
+}
+
+/* ===========================
+   EMPTY STATE
+=========================== */
+
+.empty-state {
+  text-align: center;
+  padding: var(--spacing-2xl);
+  color: var(--text-muted);
+}
+
+.empty-state p {
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.empty-state small {
+  color: var(--text-muted);
+}
