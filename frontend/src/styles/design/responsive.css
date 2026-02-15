@@ -261,10 +261,9 @@
   .poll-card {
     padding: 14px;
   }
-
   .poll-card p {
     font-size: 14px;
-    padding-right: 35px;
+    padding-right: 0; /* remove reserved space */
   }
 
   .poll-card small {
@@ -305,8 +304,10 @@
   }
 
   .share-button-wrapper {
-    top: var(--space-sm);
-    right: var(--space-sm);
+    position: static; /* remove absolute */
+    margin-bottom: 8px; /* spacing above title */
+    display: flex;
+    justify-content: flex-end; /* keep right alignment */
   }
 }
 
