@@ -79,33 +79,42 @@ User opens poll
 ---
 
 ### ⚖️ Fair Voting System
-LivePoll enforces fairness using multiple layers of protection.
+
+LivePoll ensures vote integrity using multiple protection layers.
 
 #### ✔ One Vote Per Device
-- Each device is assigned a unique `deviceToken`
-- Token is stored in `localStorage`
-- Sent with every vote request
-- Prevents repeat voting from the same device
+- Unique `deviceToken` stored in `localStorage`
+- Sent with each vote request
+- Enforced via compound unique index: `(pollId + deviceToken)`
+- Same device can vote in different polls, not twice in the same poll
 
-#### ✔ Database-Level Enforcement
-- Unique constraints prevent duplicate votes
+#### ✔ Database-Level Protection
+- MongoDB unique index prevents duplicates
 - Race-condition safe
-- Backend enforcement (not UI-dependent)
+- Backend enforced (cannot be bypassed from UI)
+
+#### ✔ IP Throttling
+- Max 5 votes per IP per poll in 10 minutes
+- Prevents spam and automated voting bursts
+
+#### ✔ API Rate Limiting
+- Express rate limiter on vote endpoint
+- Protects against request flooding and brute-force attempts
 
 #### ✔ Server-Side Validation
-Every vote is validated to ensure:
+Each vote is validated to ensure:
 - Poll exists
-- Poll is still active
-- Option belongs to the poll
+- Poll is active (not expired)
+- Option is valid
 - Device has not voted before
 
 ---
 
 ### ⏳ Automatic Poll Expiration
-- Polls expire automatically at the specified time
-- Voting is blocked after expiration
-- Backend rejects late vote attempts
-- UI reflects inactive state clearly
+- Polls auto-expire at defined time
+- Backend blocks late votes
+- UI reflects inactive state
+- Real-time updates stop after expiry
 
 ---
 
