@@ -13,15 +13,13 @@ const PollView = () => {
   const [poll, setPoll] = useState(null);
   const [voted, setVoted] = useState(false);
   const [deviceToken, setDeviceToken] = useState("");
-  const [debugData, setDebugData] = useState(null);
-  const [backendMessage, setBackendMessage] = useState("");
+  const [voteError, setVoteError] = useState("");
 
   useEffect(() => {
     const socket = io(import.meta.env.VITE_API_URL.replace("/api", ""), {
       withCredentials: true,
     });
 
-    // 🔥 Safe device token generation
     let token = localStorage.getItem("device_token");
 
     if (!token) {
@@ -59,30 +57,18 @@ const PollView = () => {
 
   const handleVote = async (optionId) => {
     try {
-      setBackendMessage("");
-      setDebugData(null);
+      setVoteError("");
 
       const response = await castVote(id, optionId, deviceToken);
 
-      // 🔥 If backend returned success false but status 200
       if (!response.data.success) {
-        setBackendMessage(response.data.message);
-        setDebugData(response.data.debug);
+        setVoteError(response.data.message);
         return;
       }
 
-      // ✅ Real success
-      setBackendMessage(response.data.message);
-      setDebugData(response.data.debug);
       setVoted(true);
     } catch (error) {
-      // 🔥 VERY IMPORTANT FIX
-      if (error.response) {
-        setBackendMessage(error.response.data?.message || "Vote blocked");
-        setDebugData(error.response.data?.debug || null);
-      } else {
-        setBackendMessage("Network error");
-      }
+      setVoteError(error.response?.data?.message || "Vote blocked");
     }
   };
 
@@ -101,54 +87,6 @@ const PollView = () => {
       <div className="card">
         <BackButton />
 
-        {/* 🔥 Device Token */}
-        <div
-          style={{
-            fontSize: "12px",
-            color: "red",
-            wordBreak: "break-all",
-            marginBottom: "10px",
-          }}
-        >
-          <strong>Device Token:</strong> {deviceToken}
-        </div>
-
-        {/* 🔥 Backend Message */}
-        {backendMessage && (
-          <div
-            style={{
-              background: "#1f2937",
-              color: "#facc15",
-              padding: "10px",
-              borderRadius: "6px",
-              marginBottom: "10px",
-              fontSize: "13px",
-            }}
-          >
-            <strong>Status:</strong> {backendMessage}
-          </div>
-        )}
-
-        {/* 🔥 Backend Debug */}
-        {debugData && (
-          <div
-            style={{
-              background: "#111827",
-              color: "#22d3ee",
-              fontSize: "12px",
-              padding: "10px",
-              borderRadius: "6px",
-              marginBottom: "15px",
-              wordBreak: "break-word",
-            }}
-          >
-            <strong>Backend Debug:</strong>
-            <pre style={{ margin: 0 }}>
-              {JSON.stringify(debugData, null, 2)}
-            </pre>
-          </div>
-        )}
-
         <h2 className="poll-title">{poll.question}</h2>
 
         <div style={{ marginBottom: "25px" }}>
@@ -157,9 +95,13 @@ const PollView = () => {
 
         <CountdownTimer expiresAt={poll.expiresAt} />
 
+        {/* ✅ Success Message */}
         {voted && (
           <div className="vote-success">✅ Your vote has been recorded</div>
         )}
+
+        {/* ❌ Error Message */}
+        {voteError && <div className="vote-error">❌ {voteError}</div>}
 
         {!voted && poll.isActive && (
           <div className="content-section" style={{ marginBottom: "30px" }}>
