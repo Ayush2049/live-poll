@@ -60,11 +60,15 @@ const PollView = () => {
 
   const handleVote = async (optionId) => {
     try {
-      console.log("🗳 Sending vote with token:", deviceToken);
+      const response = await castVote(id, optionId, deviceToken);
 
-      await castVote(id, optionId, deviceToken);
+      alert(
+        `Message: ${response.data.message}\n\nStatus: ${response.data.debug?.status}`,
+      );
 
-      setVoted(true);
+      if (response.data.success) {
+        setVoted(true);
+      }
     } catch (error) {
       alert(error.response?.data?.message);
     }

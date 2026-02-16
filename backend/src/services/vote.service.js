@@ -10,7 +10,6 @@ export const castVoteService = async ({
     pollId,
     optionId,
     deviceToken,
-    existingVote: null,
     status: "",
   };
 
@@ -33,25 +32,23 @@ export const castVoteService = async ({
     return { debug };
   }
 
-  // 🔎 Check duplicate manually
-  const existingVote = await Vote.findOne({
-    pollId,
-    deviceToken,
-  });
-
-  debug.existingVote = existingVote;
-
-  if (existingVote) {
-    debug.status = "Duplicate vote detected";
-    return { debug };
+  try {
+    // 🔥 THIS IS THE KEY
+    await Vote.create({
+      pollId,
+      optionId,
+      deviceToken,
+    });
+  } catch (error) {
+    // 🔥 DUPLICATE BLOCKED BY MONGODB
+    if (error.code === 11000) {
+      debug.status = "Duplicate vote blocked by unique index";
+      return { debug };
+    }
+    throw error;
   }
 
-  await Vote.create({
-    pollId,
-    optionId,
-    deviceToken,
-  });
-
+  // Increment only if vote inserted
   await Poll.updateOne(
     { _id: pollId, "options._id": optionId },
     {
@@ -64,7 +61,7 @@ export const castVoteService = async ({
 
   const updatedPoll = await Poll.findById(pollId);
 
-  debug.status = "Vote successful";
+  debug.status = "Vote inserted successfully";
 
   return {
     poll: updatedPoll,
