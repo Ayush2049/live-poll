@@ -7,6 +7,17 @@ import { io } from "socket.io-client";
 import ShareButton from "../components/ShareButton";
 import BackButton from "../components/BackButton";
 
+/**
+ * PollView Component
+ *
+ * Displays a single poll with real-time vote updates.
+ * Handles:
+ * - Fetching poll data
+ * - Establishing socket connection for live updates
+ * - Device-based vote restriction
+ * - Vote submission handling
+ * - Poll result rendering
+ */
 const PollView = () => {
   const { id } = useParams();
 
@@ -16,10 +27,17 @@ const PollView = () => {
   const [voteError, setVoteError] = useState("");
 
   useEffect(() => {
+    /**
+     * Establish socket connection for real-time updates.
+     */
     const socket = io(import.meta.env.VITE_API_URL.replace("/api", ""), {
       withCredentials: true,
     });
 
+    /**
+     * Retrieve or generate a unique device token
+     * to prevent duplicate voting from the same client.
+     */
     let token = localStorage.getItem("device_token");
 
     if (!token) {
@@ -32,29 +50,46 @@ const PollView = () => {
 
     setDeviceToken(token);
 
+    /**
+     * Fetch poll details from the backend.
+     */
     const fetchPoll = async () => {
       try {
         const res = await getPoll(id);
         setPoll(res.data.data);
       } catch (error) {
-        console.error("Failed to fetch poll:", error);
+        // Silent failure to avoid breaking UI rendering
       }
     };
 
     fetchPoll();
 
+    /**
+     * Join the specific poll room for real-time updates.
+     */
     socket.emit("join_poll", id);
 
+    /**
+     * Listen for vote updates and refresh poll state.
+     */
     socket.on("vote_update", (updatedPoll) => {
       setPoll(updatedPoll);
     });
 
+    /**
+     * Cleanup socket listeners and connection on unmount.
+     */
     return () => {
       socket.off("vote_update");
       socket.disconnect();
     };
   }, [id]);
 
+  /**
+   * Handles vote submission.
+   *
+   * @param {string} optionId - ID of the selected poll option
+   */
   const handleVote = async (optionId) => {
     try {
       setVoteError("");
@@ -95,13 +130,11 @@ const PollView = () => {
 
         <CountdownTimer expiresAt={poll.expiresAt} />
 
-        {/* ✅ Success Message */}
         {voted && (
-          <div className="vote-success">✅ Your vote has been recorded</div>
+          <div className="vote-success">Your vote has been recorded</div>
         )}
 
-        {/* ❌ Error Message */}
-        {voteError && <div className="vote-error">❌ {voteError}</div>}
+        {voteError && <div className="vote-error">{voteError}</div>}
 
         {!voted && poll.isActive && (
           <div className="content-section" style={{ marginBottom: "30px" }}>

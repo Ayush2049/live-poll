@@ -3,22 +3,41 @@ import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 import ShareButton from "../components/ShareButton";
 
+/**
+ * Home Component
+ *
+ * Displays a list of active polls fetched from the backend.
+ * Users can:
+ * - View all available poll rooms
+ * - Navigate to a specific poll
+ * - Create a new poll
+ * - Share a poll link directly
+ *
+ * Poll data is fetched on initial mount.
+ */
 const Home = () => {
   const [polls, setPolls] = useState([]);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchPolls();
-  }, []);
-
+  /**
+   * Fetches all available polls from the API.
+   * Updates local state with retrieved poll data.
+   */
   const fetchPolls = async () => {
     try {
       const res = await API.get("/polls");
       setPolls(res.data.data);
     } catch (error) {
-      console.error("Failed to fetch polls:", error);
+      // Silently fail to prevent UI disruption
     }
   };
+
+  /**
+   * Trigger initial poll fetch when component mounts.
+   */
+  useEffect(() => {
+    fetchPolls();
+  }, []);
 
   return (
     <div className="page-container">

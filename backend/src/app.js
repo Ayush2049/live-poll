@@ -8,11 +8,14 @@ import voteRoutes from "./routes/vote.routes.js";
 
 import { errorHandler } from "./middlewares/error.middleware.js";
 import { notFoundHandler } from "./middlewares/notFound.middleware.js";
-import { env } from "./config/env.config.js";
 
 const app = express();
 
-// Security middlewares
+/**
+ * Security Middleware
+ * - helmet: Sets secure HTTP headers
+ * - cors: Configures allowed origins and credentials
+ */
 app.use(helmet());
 app.use(
   cors({
@@ -24,25 +27,41 @@ app.use(
   })
 );
 
-
-// Body parsing
+/**
+ * Request Parsing Middleware
+ * - Parses incoming JSON payloads
+ * - Parses cookies from request headers
+ */
 app.use(express.json());
 app.use(cookieParser());
+
+/**
+ * Health check endpoint.
+ * Confirms backend service is operational.
+ */
 app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
-    message: "Live Poll Backend is running 🚀",
+    message: "Live Poll Backend is running",
   });
 });
 
-// Routes
+/**
+ * Application Routes
+ */
 app.use("/api/polls", pollRoutes);
 app.use("/api/votes", voteRoutes);
 
-// 404 handler
+/**
+ * 404 Handler
+ * Handles requests to undefined routes.
+ */
 app.use(notFoundHandler);
 
-// Global error handler
+/**
+ * Global Error Handler
+ * Centralized error response management.
+ */
 app.use(errorHandler);
 
 export default app;

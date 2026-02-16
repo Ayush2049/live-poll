@@ -3,25 +3,62 @@ import { createPoll } from "../services/api";
 import { useNavigate } from "react-router-dom";
 import BackButton from "../components/BackButton";
 
+/**
+ * CreatePoll Component
+ *
+ * Provides a form interface for creating a new poll.
+ * Users can:
+ * - Enter a poll question
+ * - Add or remove poll options (minimum 2 required)
+ * - Set an expiration date and time
+ *
+ * On successful creation, the user is redirected
+ * to the generated poll page.
+ */
 const CreatePoll = () => {
   const navigate = useNavigate();
+
+  // Form state management
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState(["", ""]);
   const [expiresAt, setExpiresAt] = useState("");
 
+  /**
+   * Updates a specific poll option based on index.
+   *
+   * @param {number} index - Index of the option to update
+   * @param {string} value - Updated option text
+   */
   const handleOptionChange = (index, value) => {
     const updated = [...options];
     updated[index] = value;
     setOptions(updated);
   };
 
-  const addOption = () => setOptions([...options, ""]);
+  /**
+   * Adds a new empty option field.
+   */
+  const addOption = () => {
+    setOptions([...options, ""]);
+  };
 
+  /**
+   * Removes an option by index.
+   * Ensures at least two options remain.
+   *
+   * @param {number} index - Index of the option to remove
+   */
   const removeOption = (index) => {
     if (options.length <= 2) return;
     setOptions(options.filter((_, i) => i !== index));
   };
 
+  /**
+   * Handles form submission.
+   * Sends poll data to backend API and redirects on success.
+   *
+   * @param {Event} e - Form submit event
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -45,7 +82,6 @@ const CreatePoll = () => {
         <h1 className="poll-title">Create New Poll</h1>
 
         <form onSubmit={handleSubmit} className="form-layout">
-          {/* QUESTION */}
           <div className="form-group">
             <label>Poll Question</label>
             <input
@@ -57,7 +93,6 @@ const CreatePoll = () => {
             />
           </div>
 
-          {/* OPTIONS */}
           <div className="form-group">
             <label>Options</label>
 
@@ -92,7 +127,6 @@ const CreatePoll = () => {
             </button>
           </div>
 
-          {/* EXPIRATION */}
           <div className="form-group">
             <label>Expires At</label>
             <input
@@ -103,7 +137,6 @@ const CreatePoll = () => {
             />
           </div>
 
-          {/* SUBMIT */}
           <button type="submit" className="submit-btn">
             Create Poll
           </button>

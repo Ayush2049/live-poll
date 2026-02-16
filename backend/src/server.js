@@ -7,51 +7,74 @@ import { connectDB } from "./config/db.config.js";
 import { env } from "./config/env.config.js";
 import { Vote } from "./models/vote.model.js";
 
+/**
+ * Create HTTP server using Express application instance.
+ */
 const server = http.createServer(app);
 
-// 🔥 Socket.io setup
+/**
+ * Initialize Socket.IO server with CORS configuration.
+ * Allows connections from local development and configured client URL.
+ */
 const io = new Server(server, {
   cors: {
     origin: [
       "http://localhost:5173",
-      env.clientUrl, // use env config consistently
+      env.clientUrl,
     ],
     credentials: true,
   },
 });
 
-// 🔁 Make io globally available
+/**
+ * Export Socket.IO instance for use in other modules
+ * (e.g., emitting vote updates from controllers).
+ */
 export { io };
 
-// 🧠 Room-based logic
+/**
+ * Socket.IO connection lifecycle.
+ * Handles:
+ * - Client connection
+ * - Poll room subscription
+ * - Disconnection cleanup
+ */
 io.on("connection", (socket) => {
-  console.log("🔌 User connected:", socket.id);
-
+  /**
+   * Subscribe client to a specific poll room
+   * to receive real-time vote updates.
+   */
   socket.on("join_poll", (pollId) => {
     socket.join(pollId);
-    console.log(`📥 User joined poll room: ${pollId}`);
   });
 
+  /**
+   * Handle socket disconnection.
+   * Reserved for future cleanup or logging if required.
+   */
   socket.on("disconnect", () => {
-    console.log("❌ User disconnected:", socket.id);
+    // No-op
   });
 });
 
-// 🚀 Start server
+/**
+ * Bootstraps the application:
+ * - Connects to database
+ * - Ensures required indexes exist
+ * - Starts HTTP server
+ */
 const startServer = async () => {
   try {
     await connectDB();
 
-    // 🔥 Force sync indexes (ensures unique constraint exists)
+    /**
+     * Synchronize MongoDB indexes.
+     * Ensures unique constraints are applied (e.g., vote uniqueness).
+     */
     await Vote.syncIndexes();
-    console.log("🔥 Vote indexes synced");
 
-    server.listen(env.port, () => {
-      console.log(`🚀 Server running on port ${env.port}`);
-    });
-
+    server.listen(env.port);
   } catch (error) {
-    console.error("❌ Server startup failed:", error);
     process.exit(1);
   }
 };
