@@ -11,12 +11,29 @@ const PollView = () => {
   const { id } = useParams();
   const [poll, setPoll] = useState(null);
   const [voted, setVoted] = useState(false);
+  const [deviceToken, setDeviceToken] = useState("");
 
   useEffect(() => {
+    // 🔌 Initialize socket
     const socket = io(import.meta.env.VITE_API_URL.replace("/api", ""), {
       withCredentials: true,
     });
 
+    // 🔍 SAFE TOKEN GENERATION (Debug Mode)
+    let token = localStorage.getItem("device_token");
+
+    if (!token) {
+      token =
+        (window.crypto?.randomUUID && window.crypto.randomUUID()) ||
+        `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+      localStorage.setItem("device_token", token);
+    }
+
+    setDeviceToken(token);
+    console.log("📱 Device token:", token);
+
+    // 📥 Fetch poll
     const fetchPoll = async () => {
       try {
         const res = await getPoll(id);
@@ -28,6 +45,7 @@ const PollView = () => {
 
     fetchPoll();
 
+    // Join WebSocket room
     socket.emit("join_poll", id);
 
     socket.on("vote_update", (updatedPoll) => {
@@ -42,12 +60,7 @@ const PollView = () => {
 
   const handleVote = async (optionId) => {
     try {
-      let deviceToken = localStorage.getItem("device_token");
-
-      if (!deviceToken) {
-        deviceToken = crypto.randomUUID();
-        localStorage.setItem("device_token", deviceToken);
-      }
+      console.log("🗳 Sending vote with token:", deviceToken);
 
       await castVote(id, optionId, deviceToken);
 
@@ -71,6 +84,19 @@ const PollView = () => {
     <div className="page-container">
       <div className="card">
         <BackButton />
+
+        {/* 🔍 DEBUG TOKEN DISPLAY */}
+        <p
+          style={{
+            fontSize: "12px",
+            color: "red",
+            wordBreak: "break-all",
+            marginBottom: "10px",
+          }}
+        >
+          Device Token: {deviceToken}
+        </p>
+
         <h2 className="poll-title">{poll.question}</h2>
 
         <div style={{ marginBottom: "25px" }}>
