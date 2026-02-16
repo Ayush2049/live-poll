@@ -6,30 +6,52 @@ export const castVoteService = async ({
   optionId,
   deviceToken,
 }) => {
+  const debug = {
+    pollId,
+    optionId,
+    deviceToken,
+    existingVote: null,
+    status: "",
+  };
+
   const poll = await Poll.findById(pollId);
 
   if (!poll) {
-    throw new Error("Poll not found.");
+    debug.status = "Poll not found";
+    return { debug };
   }
 
   if (new Date() > poll.expiresAt) {
-    throw new Error("Poll has expired.");
+    debug.status = "Poll expired";
+    return { debug };
   }
 
   const option = poll.options.id(optionId);
 
   if (!option) {
-    throw new Error("Invalid option selected.");
+    debug.status = "Invalid option";
+    return { debug };
   }
 
-  // 🔥 Create vote (unique index handles duplicates safely)
+  // 🔎 Check duplicate manually
+  const existingVote = await Vote.findOne({
+    pollId,
+    deviceToken,
+  });
+
+  debug.existingVote = existingVote;
+
+  if (existingVote) {
+    debug.status = "Duplicate vote detected";
+    return { debug };
+  }
+
   await Vote.create({
     pollId,
     optionId,
     deviceToken,
   });
 
-  // Atomic increment
   await Poll.updateOne(
     { _id: pollId, "options._id": optionId },
     {
@@ -40,5 +62,12 @@ export const castVoteService = async ({
     }
   );
 
-  return await Poll.findById(pollId);
+  const updatedPoll = await Poll.findById(pollId);
+
+  debug.status = "Vote successful";
+
+  return {
+    poll: updatedPoll,
+    debug,
+  };
 };
