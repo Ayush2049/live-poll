@@ -12,14 +12,14 @@ const PollView = () => {
   const [poll, setPoll] = useState(null);
   const [voted, setVoted] = useState(false);
   const [deviceToken, setDeviceToken] = useState("");
+  const [debugData, setDebugData] = useState(null); // 🔥 NEW DEBUG STATE
 
   useEffect(() => {
-    // 🔌 Initialize socket
     const socket = io(import.meta.env.VITE_API_URL.replace("/api", ""), {
       withCredentials: true,
     });
 
-    // 🔍 SAFE TOKEN GENERATION (Debug Mode)
+    // 🔥 Generate / get device token
     let token = localStorage.getItem("device_token");
 
     if (!token) {
@@ -31,9 +31,7 @@ const PollView = () => {
     }
 
     setDeviceToken(token);
-    console.log("📱 Device token:", token);
 
-    // 📥 Fetch poll
     const fetchPoll = async () => {
       try {
         const res = await getPoll(id);
@@ -45,7 +43,6 @@ const PollView = () => {
 
     fetchPoll();
 
-    // Join WebSocket room
     socket.emit("join_poll", id);
 
     socket.on("vote_update", (updatedPoll) => {
@@ -62,15 +59,15 @@ const PollView = () => {
     try {
       const response = await castVote(id, optionId, deviceToken);
 
-      alert(
-        `Message: ${response.data.message}\n\nStatus: ${response.data.debug?.status}`,
-      );
+      setDebugData(response.data.debug); // 🔥 CAPTURE DEBUG FROM BACKEND
 
       if (response.data.success) {
         setVoted(true);
       }
     } catch (error) {
-      alert(error.response?.data?.message);
+      if (error.response) {
+        setDebugData(error.response.data.debug); // 🔥 SHOW DUPLICATE ERROR
+      }
     }
   };
 
@@ -89,8 +86,8 @@ const PollView = () => {
       <div className="card">
         <BackButton />
 
-        {/* 🔍 DEBUG TOKEN DISPLAY */}
-        <p
+        {/* 🔥 DEVICE TOKEN DISPLAY */}
+        <div
           style={{
             fontSize: "12px",
             color: "red",
@@ -98,8 +95,28 @@ const PollView = () => {
             marginBottom: "10px",
           }}
         >
-          Device Token: {deviceToken}
-        </p>
+          <strong>Device Token:</strong> {deviceToken}
+        </div>
+
+        {/* 🔥 BACKEND DEBUG DISPLAY */}
+        {debugData && (
+          <div
+            style={{
+              background: "#111827",
+              color: "#22d3ee",
+              fontSize: "12px",
+              padding: "10px",
+              borderRadius: "6px",
+              marginBottom: "15px",
+              wordBreak: "break-word",
+            }}
+          >
+            <strong>Backend Debug:</strong>
+            <pre style={{ margin: 0 }}>
+              {JSON.stringify(debugData, null, 2)}
+            </pre>
+          </div>
+        )}
 
         <h2 className="poll-title">{poll.question}</h2>
 
@@ -113,7 +130,6 @@ const PollView = () => {
           <div className="vote-success">Your vote has been recorded</div>
         )}
 
-        {/* Vote Buttons */}
         {!voted && poll.isActive && (
           <div className="content-section" style={{ marginBottom: "30px" }}>
             {poll.options.map((opt) => (
@@ -128,7 +144,6 @@ const PollView = () => {
           </div>
         )}
 
-        {/* Results ALWAYS visible */}
         <PollResults poll={poll} />
       </div>
     </div>
