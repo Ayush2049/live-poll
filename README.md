@@ -185,25 +185,71 @@ npm run dev
 
 LivePoll is deployed using modern cloud platforms to ensure scalability, reliability, and secure HTTPS access.
 
+---
+
 ### 🚀 Live Demo
 
-🔗 Frontend (Vercel):  
-https://live-poll-three.vercel.app/
+- **Frontend (Vercel):**  
+  https://live-poll-three.vercel.app/
 
-🔗 Backend API (Render):  
-https://live-poll-lmnk.onrender.com
+- **Backend API (Render):**  
+  https://live-poll-lmnk.onrender.com
 
 ---
 
-### 🖥️ Frontend Deployment (Vercel)
+## 🖥️ Frontend Deployment (Vercel)
 
-The frontend is deployed using **Vercel**.
-
-**Configuration:**
+**Configuration**
 
 - Root Directory: `frontend/`
 - Framework: Vite (React)
-- Environment Variable:
+
+**Environment Variable**
 
 ```env
 VITE_API_URL=https://live-poll-lmnk.onrender.com/api
+```
+
+Vercel automatically handles:
+- Production build
+- HTTPS
+- CDN distribution
+- Auto-redeploy on every push
+
+---
+
+## ⚙️ Backend Deployment (Render)
+
+**Configuration**
+
+- Service Type: Web Service
+- Root Directory: `backend/`
+- Runtime: Node.js
+
+**Build Command**
+
+```bash
+npm install
+```
+
+**Start Command**
+
+```bash
+npm start
+```
+
+**Environment Variables**
+
+```env
+PORT=5000
+MONGO_URI=<your_mongodb_connection_string>
+CLIENT_URL=https://live-poll-three.vercel.app
+```
+
+Render provides:
+- Automatic HTTPS
+- Continuous deployment
+- Managed Node.js hosting
+
+---
+
