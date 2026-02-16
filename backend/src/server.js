@@ -36,7 +36,8 @@ export { io };
 
 const startServer = async () => {
   await connectDB();
-
+  await Vote.syncIndexes();
+  console.log("🔥 Vote indexes synced");
   server.listen(env.port, () => {
     console.log(`🚀 Server running on port ${env.port}`);
   });
