@@ -17,12 +17,13 @@ export const castVote = async (req, res, next) => {
       pollId,
       optionId,
       deviceToken,
+      voterIP: req.ip, // 🔥 important
     });
 
     if (!result.poll) {
       return res.status(200).json({
         success: false,
-        message: result.debug.status,
+        message: result.debug.action,
         debug: result.debug,
       });
     }

@@ -5,11 +5,13 @@ export const castVoteService = async ({
   pollId,
   optionId,
   deviceToken,
+  voterIP,
 }) => {
   const debug = {
     pollId,
     optionId,
     deviceToken,
+    voterIP,
     action: "",
   };
 
@@ -32,42 +34,40 @@ export const castVoteService = async ({
     return { debug };
   }
 
-  // 🔥 STEP 1 — Remove accidental duplicates (if any exist)
-  const existingVotes = await Vote.find({
+  // 🛡 STEP 1 — IP Throttle (5 votes per 10 minutes per poll)
+  const recentVotesFromIP = await Vote.countDocuments({
     pollId,
-    deviceToken,
+    voterIP,
+    createdAt: {
+      $gte: new Date(Date.now() - 10 * 60 * 1000),
+    },
   });
 
-  if (existingVotes.length > 1) {
-    // Keep first, delete rest
-    const [, ...remove] = existingVotes;
-
-    await Vote.deleteMany({
-      _id: { $in: remove.map(v => v._id) },
-    });
-
-    debug.action = "Cleaned old duplicate votes";
+  if (recentVotesFromIP >= 5) {
+    debug.action = "IP throttle triggered";
+    return { debug };
   }
 
-  // 🔥 STEP 2 — Check if vote already exists
-  const alreadyVoted = await Vote.findOne({
+  // 🛡 STEP 2 — Hard duplicate check (unique index safety)
+  const existingVote = await Vote.findOne({
     pollId,
     deviceToken,
   });
 
-  if (alreadyVoted) {
+  if (existingVote) {
     debug.action = "Duplicate vote blocked";
     return { debug };
   }
 
-  // 🔥 STEP 3 — Create vote
+  // 🛡 STEP 3 — Create vote
   await Vote.create({
     pollId,
     optionId,
     deviceToken,
+    voterIP,
   });
 
-  // 🔥 STEP 4 — Increment poll counts
+  // 🛡 STEP 4 — Atomic increment
   await Poll.updateOne(
     { _id: pollId, "options._id": optionId },
     {
