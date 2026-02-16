@@ -64,16 +64,22 @@ const PollView = () => {
 
       const response = await castVote(id, optionId, deviceToken);
 
-      setDebugData(response.data.debug);
-      setBackendMessage(response.data.message);
-
-      if (response.data.success) {
-        setVoted(true);
+      // 🔥 If backend returned success false but status 200
+      if (!response.data.success) {
+        setBackendMessage(response.data.message);
+        setDebugData(response.data.debug);
+        return;
       }
+
+      // ✅ Real success
+      setBackendMessage(response.data.message);
+      setDebugData(response.data.debug);
+      setVoted(true);
     } catch (error) {
+      // 🔥 VERY IMPORTANT FIX
       if (error.response) {
-        setBackendMessage(error.response.data.message);
-        setDebugData(error.response.data.debug);
+        setBackendMessage(error.response.data?.message || "Vote blocked");
+        setDebugData(error.response.data?.debug || null);
       } else {
         setBackendMessage("Network error");
       }
